@@ -89,9 +89,40 @@ headers = ${JSON.stringify(headers, null, 4).replace(/"/g, "'")}
   return code;
 }
 
-export type CodeLanguage = 'curl' | 'javascript' | 'python';
+export type CodeLanguage = 'curl' | 'javascript' | 'python' | 'sdk';
 
-export function generateCode(language: CodeLanguage, params: CodeTemplateParams): string {
+// Maps IV endpoint IDs to SDK credential types
+const SDK_CREDENTIAL_TYPE_MAP: Record<string, string> = {
+  'iv_gov_id_verification': 'kyc',
+  'iv_phone_verification': 'phone',
+  'iv_biometrics_verification': 'biometrics',
+  'iv_clean_hands': 'clean-hands',
+};
+
+interface SdkCodeParams {
+  endpointId: string;
+  url: string;
+}
+
+export function generateSdkCode({ endpointId, url }: SdkCodeParams): string {
+  const credentialType = SDK_CREDENTIAL_TYPE_MAP[endpointId] || 'kyc';
+
+  return `// Install: npm install @holonym-foundation/human-id-sdk
+
+import { humanID } from '@holonym-foundation/human-id-sdk';
+
+// Step 1: Prompt user to complete verification
+// This opens the Human ID verification flow
+await humanID.requestSBT('${credentialType}'); // 'kyc' | 'phone' | 'biometrics' | 'clean-hands'
+
+// Step 2: Check verification status via API
+const resp = await fetch(
+  '${url}'
+);
+const { result: isVerified } = await resp.json();`;
+}
+
+export function generateCode(language: CodeLanguage, params: CodeTemplateParams, endpointId?: string): string {
   switch (language) {
     case 'curl':
       return generateCurlCode(params);
@@ -99,6 +130,8 @@ export function generateCode(language: CodeLanguage, params: CodeTemplateParams)
       return generateJavaScriptCode(params);
     case 'python':
       return generatePythonCode(params);
+    case 'sdk':
+      return generateSdkCode({ endpointId: endpointId || '', url: params.url });
     default:
       return '';
   }
