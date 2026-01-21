@@ -61,6 +61,7 @@ export async function executeRequest(request: ApiRequest): Promise<ApiResponse> 
 /**
  * Build a request that goes through our server-side proxy.
  * The proxy adds the API key server-side, keeping it secure.
+ * Individual Verifications (api.holonym.io) use a separate proxy without API key.
  */
 export function buildProxiedRequest(
   method: string,
@@ -72,8 +73,13 @@ export function buildProxiedRequest(
   const path = url.pathname;
   const queryParams = url.searchParams;
 
-  // Build proxy URL with path as a parameter
-  const proxyUrl = new URL('/api/proxy', window.location.origin);
+  // Use different proxy routes based on the API
+  const isHolonymApi = originalUrl.includes('api.holonym.io');
+  const isSignProtocol = originalUrl.includes('sign.global');
+  let proxyPath = '/api/proxy';
+  if (isHolonymApi) proxyPath = '/api/proxy/holonym';
+  if (isSignProtocol) proxyPath = '/api/proxy/sign';
+  const proxyUrl = new URL(proxyPath, window.location.origin);
   proxyUrl.searchParams.set('path', path);
 
   // Copy over other query params
