@@ -4,9 +4,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { ParsedEndpoint, ApiResponse } from '@/types/api';
 import { getPathParameters, getQueryParameters, buildUrl } from '@/lib/openapi';
 import { executeRequest, buildProxiedRequest } from '@/lib/api-client';
-import { getEndpointDisplayName, getEndpointSlug, getEndpointDescription, getEndpointDocsUrl } from '@/lib/endpoint-config';
+import { getEndpointDisplayName, getEndpointSlug, getEndpointDescription, getEndpointDocsUrl, getBaseUrlForEndpoint, isIndividualVerificationEndpoint, getEndpointSampleResponse } from '@/lib/endpoint-config';
 import { CodeGenerator } from './CodeGenerator';
 import { ResponseViewer } from './ResponseViewer';
+import { Highlight, themes } from 'prism-react-renderer';
 
 interface EndpointSectionProps {
   endpoint: ParsedEndpoint;
@@ -38,6 +39,7 @@ export function EndpointSection({
   const [response, setResponse] = useState<ApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showCodeSamples, setShowCodeSamples] = useState(false);
+  const [showSampleResponse, setShowSampleResponse] = useState(false);
 
   const pathParameters = getPathParameters(endpoint);
   const queryParameters = getQueryParameters(endpoint);
@@ -45,6 +47,8 @@ export function EndpointSection({
   const displayName = getEndpointDisplayName(endpoint.id);
   const customDescription = getEndpointDescription(endpoint.id);
   const docsUrl = getEndpointDocsUrl(endpoint.id);
+  const isIVEndpoint = isIndividualVerificationEndpoint(endpoint.id);
+  const effectiveBaseUrl = getBaseUrlForEndpoint(endpoint.id);
 
   // Convert markdown links and HTML to JSX
   const renderDescription = (text: string) => {
@@ -111,7 +115,7 @@ export function EndpointSection({
     setQueryParams(prev => ({ ...prev, [name]: value }));
   }, []);
 
-  const currentUrl = buildUrl(baseUrl, endpoint.path, pathParams, queryParams);
+  const currentUrl = buildUrl(effectiveBaseUrl, endpoint.path, pathParams, queryParams);
 
   const canSendRequest = () => {
     for (const param of pathParameters) {
@@ -311,7 +315,7 @@ export function EndpointSection({
           </div>
         )}
 
-        {/* Code Samples Toggle */}
+        {/* Sample Request Toggle */}
         <div className="mt-6 pt-6 border-t border-border">
           <button
             onClick={() => setShowCodeSamples(!showCodeSamples)}
@@ -325,19 +329,61 @@ export function EndpointSection({
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
-            Code Samples
+            Sample Request
           </button>
 
           {showCodeSamples && (
             <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-3">
-                Replace <code className="px-1 py-0.5 bg-muted rounded">YOUR_API_KEY</code> with your API key
-              </p>
+              {!isIVEndpoint && (
+                <p className="text-xs text-muted-foreground mb-3">
+                  Replace <code className="px-1 py-0.5 bg-muted rounded">YOUR_API_KEY</code> with your API key
+                </p>
+              )}
               <CodeGenerator
                 method={endpoint.method}
                 url={currentUrl}
-                apiKey={CODE_SAMPLE_API_KEY}
+                apiKey={isIVEndpoint ? '' : CODE_SAMPLE_API_KEY}
               />
+            </div>
+          )}
+        </div>
+
+        {/* Sample Response Toggle */}
+        <div className="mt-4">
+          <button
+            onClick={() => setShowSampleResponse(!showSampleResponse)}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <svg
+              className={`w-4 h-4 transition-transform ${showSampleResponse ? 'rotate-90' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            Sample Response
+          </button>
+
+          {showSampleResponse && (
+            <div className="mt-4 rounded-lg border border-border overflow-hidden">
+              <Highlight
+                theme={themes.nightOwl}
+                code={getEndpointSampleResponse(endpoint.id)}
+                language="json"
+              >
+                {({ style, tokens, getLineProps, getTokenProps }) => (
+                  <pre style={style} className="p-4 text-sm !bg-code-bg overflow-x-auto">
+                    {tokens.map((line, i) => (
+                      <div key={i} {...getLineProps({ line })}>
+                        {line.map((token, key) => (
+                          <span key={key} {...getTokenProps({ token })} />
+                        ))}
+                      </div>
+                    ))}
+                  </pre>
+                )}
+              </Highlight>
             </div>
           )}
         </div>
