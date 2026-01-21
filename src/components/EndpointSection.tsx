@@ -343,6 +343,7 @@ export function EndpointSection({
                 method={endpoint.method}
                 url={currentUrl}
                 apiKey={isIVEndpoint ? '' : CODE_SAMPLE_API_KEY}
+                endpointId={endpoint.id}
               />
             </div>
           )}
