@@ -22,6 +22,12 @@ export const metadata: Metadata = {
     description: "Interactive API Reference for the Human Passport Developer Platform",
     type: "website",
   },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.png', type: 'image/png' }
+    ]
+  }
 };
 
 export default function RootLayout({
