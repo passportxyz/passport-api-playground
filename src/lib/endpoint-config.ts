@@ -142,13 +142,6 @@ export const ENDPOINT_CONFIG: Record<string, { displayName: string; slug: string
     description: `This is the primary endpoint that partners using the Stamps product will use.<br /><br />This endpoint returns the latest score and Stamp data for a single address.`,
     docsUrl: 'https://docs.passport.xyz/building-with-passport/stamps/passport-api/api-reference#retrieve-latest-score-for-a-single-address',
   },
-  'v2_api_api_stamps_get_score_history': {
-    displayName: 'GET Score History',
-    slug: 'score-history',
-    order: 2,
-    description: `This endpoint will return the historical score and Stamp data for a single address at a specified time.<br /><br />**Note:** To access this endpoint, you must submit your use case and be approved by the Passport team. To do so, please fill out the following form, making sure to provide a detailed description of your use case. The Passport team typically reviews and responds to form responses within 48 hours. [Request access](https://forms.gle/4GyicBfhtHW29eEu8)`,
-    docsUrl: 'https://docs.passport.xyz/building-with-passport/stamps/passport-api/api-reference#retrieve-historical-score-for-a-single-address',
-  },
   'v2_api_api_stamps_get_passport_stamps': {
     displayName: 'GET Verified Stamps',
     slug: 'verified-stamps',
@@ -259,14 +252,6 @@ const SAMPLE_RESPONSES: Record<string, string> = {
     stamps: [
       { name: "Google", credential: "..." },
       { name: "Discord", credential: "..." }
-    ]
-  }, null, 2),
-  'v2_api_api_stamps_get_score_history': JSON.stringify({
-    address: "0x...",
-    score: "22.456",
-    timestamp: "2024-01-10T08:00:00Z",
-    stamps: [
-      { name: "Google", credential: "..." }
     ]
   }, null, 2),
   'v2_api_api_stamps_get_passport_stamps': JSON.stringify({

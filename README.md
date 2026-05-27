@@ -99,7 +99,6 @@ The spec is fetched at build time and revalidated every hour using Next.js ISR (
 
 ### Stamp API v2
 - `GET /v2/stamps/{scorer_id}/score/{address}` - Retrieve Stamp-based score
-- `GET /v2/stamps/{scorer_id}/score/{address}/history` - Retrieve historical score
 - `GET /v2/stamps/metadata` - Get all available Stamps
 - `GET /v2/stamps/{address}` - Get Stamps for an address
 
